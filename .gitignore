@@ -6,6 +6,8 @@ Backend/*.py[cod]
 Backend/build/
 Backend/dist/
 Backend/*.egg-info/
+Backend/data/vector_store/
+*.sqlite3
 
 # Virtual environments
 Backend/venv/
@@ -43,3 +45,10 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+**/__pycache__/
+**/*.pyc
+Backend/data/vector_store/
+Backend/data/chroma.sqlite3
+*.sqlite3
+.ipynb_checkpoints/
