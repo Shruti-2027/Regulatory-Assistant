@@ -1002,3 +1002,628 @@ Groq provides fast inference for supported language models.
 
 This is useful for an interactive application where users expect relatively quick responses from the AI pipeline.
 
+---
+
+# 🏛️ Backend Architecture
+
+The backend is responsible for:
+
+1. Receiving user requests
+2. Processing queries
+3. Performing vector retrieval
+4. Constructing contextual prompts
+5. Calling the LLM
+6. Running the validation workflow
+7. Returning the final response
+
+Conceptually:
+
+```text
+Frontend
+   │
+   │ HTTP Request
+   ▼
+FastAPI
+   │
+   ├── Query Processing
+   │
+   ├── Retrieval
+   │      └── ChromaDB
+   │
+   ├── Drafting Agent
+   │      └── Groq / Llama
+   │
+   └── Validation Agent
+          └── Groq / Llama
+   │
+   ▼
+Final Response
+```
+
+---
+
+# 🌐 Frontend Architecture
+
+The frontend is implemented using:
+
+```text
+React + Vite
+```
+
+Its primary responsibility is providing a user-friendly interface through which users can:
+
+1. Enter regulatory questions
+2. Submit queries
+3. Communicate with the FastAPI backend
+4. Receive and display generated responses
+
+The frontend and backend are separated, allowing the AI pipeline to operate independently from the presentation layer.
+
+---
+
+# 🔌 API Workflow
+
+The high-level communication flow is:
+
+```text
+React Frontend
+      │
+      │ HTTP Request
+      ▼
+FastAPI Backend
+      │
+      ▼
+Query Processing
+      │
+      ▼
+RAG Retrieval
+      │
+      ▼
+AI Workflow
+      │
+      ▼
+Validation
+      │
+      ▼
+FastAPI Response
+      │
+      ▼
+React Frontend
+```
+
+---
+
+# 📁 Project Structure
+
+The repository follows a frontend/backend architecture.
+
+```text
+Regulatory-Assistant/
+│
+├── backend/
+│   ├── ...
+│   └── ...
+│
+├── frontend/
+│   ├── ...
+│   └── ...
+│
+├── requirements.txt
+├── README.md
+└── ...
+```
+
+> Update this section with the exact repository structure if additional modules or directories are added.
+
+---
+
+# ⚙️ Configuration
+
+The application requires the appropriate environment variables for external services.
+
+Create a `.env` file:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+```
+
+Never commit API keys or other secrets to the repository.
+
+If additional variables are required by the current implementation, add them to the environment configuration before running the application.
+
+---
+
+# 🚀 Installation
+
+## Prerequisites
+
+Make sure the following are installed:
+
+* Python 3.x
+* Node.js
+* npm
+* Git
+
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/Shruti-2027/Regulatory-Assistant.git
+```
+
+Navigate into the project:
+
+```bash
+cd Regulatory-Assistant
+```
+
+---
+
+## 2. Backend Setup
+
+Create a Python virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+On Linux/macOS:
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 3. Environment Variables
+
+Create:
+
+```text
+.env
+```
+
+and configure the required API keys.
+
+Example:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+```
+
+Never commit `.env` files or API keys to GitHub.
+
+---
+
+## 4. Start Backend
+
+Start the FastAPI application using the project's configured entry point.
+
+For example:
+
+```bash
+uvicorn main:app --reload
+```
+
+The API should then be available through the configured local port.
+
+> Replace `main:app` with the actual entry point used by the repository if different.
+
+---
+
+# 💻 Frontend Setup
+
+Navigate to the frontend directory:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The Vite development server will provide the frontend URL in the terminal.
+
+---
+
+# 🔬 Example Query Flow
+
+Suppose the user asks:
+
+```text
+What are the regulatory considerations for stability testing?
+```
+
+The system processes the request as follows:
+
+### Step 1 — Query
+
+```text
+"What are the regulatory considerations for stability testing?"
+```
+
+### Step 2 — Embedding
+
+The query is converted into a 384-dimensional vector using:
+
+```text
+all-MiniLM-L6-v2
+```
+
+### Step 3 — Retrieval
+
+ChromaDB searches the regulatory knowledge base and retrieves the top five relevant chunks.
+
+```text
+Query
+ ↓
+Vector Similarity
+ ↓
+Top 5 Chunks
+```
+
+### Step 4 — Context Construction
+
+The retrieved chunks are supplied as contextual information to the Drafting Agent.
+
+### Step 5 — Draft
+
+The Llama model generates an initial response.
+
+### Step 6 — Validation
+
+The Validation Agent reviews the generated response against the retrieved regulatory context.
+
+### Step 7 — Final Response
+
+The validated response is returned to the frontend.
+
+---
+
+# 🧪 Application Flow
+
+A complete user interaction can therefore be represented as:
+
+```text
+                    User
+                     │
+                     ▼
+              ┌─────────────┐
+              │ React / Vite│
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   FastAPI   │
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   Retrieve  │
+              │   Top 5     │
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   ChromaDB  │
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   Drafting  │
+              │    Agent    │
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ Validation  │
+              │    Agent    │
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   Response  │
+              └─────────────┘
+```
+
+---
+
+# 🧠 Implementation Highlights
+
+The project demonstrates practical implementation of several AI engineering concepts:
+
+### Retrieval-Augmented Generation
+
+The application combines external regulatory knowledge with LLM generation.
+
+### Semantic Search
+
+Document embeddings allow semantically related information to be retrieved.
+
+### Vector Databases
+
+ChromaDB provides persistent vector-based retrieval.
+
+### LLM Integration
+
+The project integrates Groq-hosted Llama models through LangChain.
+
+### AI Workflow Design
+
+The Drafting → Validation architecture separates response generation from response verification.
+
+### Full-Stack AI Integration
+
+The project connects:
+
+```text
+React
+   ↕
+FastAPI
+   ↕
+LangChain
+   ↕
+ChromaDB
+   ↕
+Groq / Llama
+```
+
+---
+
+# ⚠️ Limitations
+
+Although the system introduces retrieval and validation mechanisms, it should not be considered a replacement for professional regulatory expertise.
+
+Potential limitations include:
+
+* Retrieval quality depends on the quality of indexed documents.
+* Incorrect or incomplete source documents can affect generated responses.
+* Semantic retrieval may occasionally retrieve context that is related but not sufficiently specific.
+* LLM-generated responses can still contain errors.
+* Regulatory documents may change over time.
+* The current system does not guarantee regulatory or legal correctness.
+
+Therefore, important regulatory decisions should always be verified against the latest authoritative documentation.
+
+---
+
+# 🔮 Future Improvements
+
+## 1. Source Citations
+
+Return the exact regulatory document and section used to generate each part of the response.
+
+```text
+Answer
+  ↓
+Source Document
+  ↓
+Section / Page
+```
+
+---
+
+## 2. Hybrid Retrieval
+
+Combine:
+
+```text
+Semantic Search
++
+Keyword Search
+```
+
+to improve retrieval for specialized regulatory terminology.
+
+---
+
+## 3. Reranking
+
+Retrieve a larger candidate set and use a reranker to select the most relevant passages.
+
+```text
+Top 20 candidates
+       ↓
+Reranker
+       ↓
+Top 5 relevant chunks
+```
+
+---
+
+## 4. Evaluation Framework
+
+Introduce a dedicated evaluation dataset containing:
+
+* Questions
+* Expected answers
+* Relevant source documents
+* Ground-truth passages
+
+This would allow systematic evaluation of:
+
+* Retrieval accuracy
+* Answer relevance
+* Faithfulness
+* Completeness
+
+---
+
+## 5. Continuous Knowledge Updates
+
+Automate ingestion of new regulatory documents so that the knowledge base can remain synchronized with updated guidance.
+
+---
+
+## 6. Conversation Memory
+
+Allow users to ask follow-up questions while maintaining relevant conversational context.
+
+---
+
+## 7. Authentication and Authorization
+
+Add user authentication and role-based access for production environments.
+
+---
+
+## 8. Production Deployment
+
+Deploy the complete system using scalable infrastructure:
+
+```text
+React Frontend
+       +
+FastAPI Backend
+       +
+Vector Database
+       +
+LLM Provider
+```
+
+---
+
+# 🏆 Project Highlights
+
+### AI / RAG
+
+* Retrieval-Augmented Generation
+* Semantic document search
+* Vector embeddings
+* ChromaDB
+* LangChain
+* LLM integration
+
+### Agentic Workflow
+
+* Drafting Agent
+* Validation Agent
+* Sequential AI workflow
+
+### Backend
+
+* FastAPI
+* REST API
+* AI service integration
+
+### Frontend
+
+* React
+* Vite
+
+### Domain
+
+* Pharmaceutical regulatory documentation
+* ICH
+* FDA
+
+---
+
+# 🎥 Demo
+
+A demonstration of the application is available here:
+
+**Demo Video:**
+https://youtu.be/nGKNmpRoDQ4
+
+---
+
+# 📂 Repository
+
+**GitHub Repository:**
+
+https://github.com/Shruti-2027/Regulatory-Assistant
+
+---
+
+# ⚠️ Disclaimer
+
+Regulatory Assistant is an **educational and demonstration project**.
+
+It is not intended to provide professional medical, legal, pharmaceutical, or regulatory advice.
+
+The generated responses should not be used as the sole basis for regulatory submissions, compliance decisions, medical decisions, or other high-stakes decisions.
+
+Users should always verify important information against the latest official regulatory sources and consult qualified professionals where appropriate.
+
+---
+
+# 📌 Summary
+
+Regulatory Assistant demonstrates how a domain-specific AI assistant can be built by combining a **vector-based retrieval system with an LLM and an additional validation stage**.
+
+The overall architecture is:
+
+```text
+                  ┌─────────────┐
+                  │    User     │
+                  └──────┬──────┘
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │ React/Vite  │
+                  └──────┬──────┘
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │   FastAPI   │
+                  └──────┬──────┘
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │   Query     │
+                  │ Embedding   │
+                  └──────┬──────┘
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │  ChromaDB   │
+                  │  Retrieval  │
+                  └──────┬──────┘
+                         │
+                     Top 5 Chunks
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │   Drafting  │
+                  │    Agent    │
+                  └──────┬──────┘
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │ Validation  │
+                  │    Agent    │
+                  └──────┬──────┘
+                         │
+                         ▼
+                  ┌─────────────┐
+                  │    Final    │
+                  │   Answer    │
+                  └─────────────┘
+```
+
+The project demonstrates an end-to-end implementation of a **domain-specific RAG application**, from regulatory document ingestion and vector retrieval to LLM-based generation and response validation.
+
+
