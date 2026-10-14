@@ -92,11 +92,12 @@ def validate(request: ValidateRequest):
         original_query=draft_session["original_query"],
         draft_output=draft_session["draft_output"],
         validation_input=draft_session["validation_input"],
-        validation_agent=validating_agent
+        validation_agent=validating_agent,
+        retriever=rag_retriever
     )
 
+    print("Validation result:", validation_result)
     return validation_result
-
 
 # ----------------------------
 # 3. Revise Endpoint

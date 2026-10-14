@@ -38,7 +38,7 @@ def generate_draft_session(
 
     draft_output = draft_result["answer"]
     sources = draft_result.get("sources", [])
-    confidence = draft_result.get("confidence", 0.0)
+    confidence = draft_result.get("confidence_score", 0.0)
 
     # Step 3: Prepare validation-ready input
     validation_input = f"""

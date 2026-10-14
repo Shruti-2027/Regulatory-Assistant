@@ -205,7 +205,7 @@ export default function App() {
   const s3Active = finalRunning || (validateComplete && !finalComplete)
 
   return (
-    <div className="app">
+    <div className="app" data-theme={theme}>
       <Navbar theme={theme} onToggleTheme={toggleTheme} />
 
       <main className="main">

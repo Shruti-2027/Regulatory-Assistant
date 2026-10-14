@@ -76,22 +76,6 @@ drafting_agent = create_agent(
 
                 ---
 
-                INPUTS:
-
-                CONTEXT:
-                {context}
-
-                USER INPUT:
-                {input}
-
-                PREVIOUS DRAFT (optional):
-                {draft}
-
-                CORRECTIONS (optional):
-                {corrections}
-
-                ---
-
                 OUTPUT FORMAT:
 
                 Return ONLY the structured regulatory document.
@@ -120,13 +104,13 @@ def extract_answer(response):
     return getattr(response, "content", str(response))
 
 
-def drafting_pipeline(query, retriever, drafting_agent):
+def drafting_pipeline(query, retriever, drafting_agent, retrieval_query=None):
     print(f"Processing drafting request: {query}")
 
     # ---------------------------
     # STEP 1: Retrieve context
     # ---------------------------
-    results = retriever.retrieve(query, top_k=5)
+    results = retriever.retrieve(retrieval_query or query, top_k=5)
 
     print(f"Retrieved {len(results)} documents")
 
@@ -179,8 +163,22 @@ def drafting_pipeline(query, retriever, drafting_agent):
     # ---------------------------
     try:
         response = drafting_agent.invoke({
-            "context": context,
-            "input": query
+            "messages":[
+                {
+                "role": "user",
+                "content": f"""
+            REGULATORY CONTEXT:
+            {context}
+
+            USER REQUEST:
+            {query}
+
+            Follow the system instructions. Use the regulatory context
+            for regulatory requirements. Do not fabricate actual study
+            results or other missing clinical data.
+            """
+            }
+            ]
         })
 
         return {

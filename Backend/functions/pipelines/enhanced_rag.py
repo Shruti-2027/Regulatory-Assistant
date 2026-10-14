@@ -6,7 +6,12 @@ def rag_advanced(query, retriever, llm, top_k=5, min_score=0.2, return_context=F
     """
     results = retriever.retrieve(query, top_k=top_k)
     if not results:
-        return {'answer': "I do not have sufficient information in the provided documents to answer this accurately.", 'sources': [], 'confidence': 0.0, 'context': ''}
+        return {
+        'answer': "I do not have sufficient information in the provided documents to answer this accurately.",
+        'sources': [],
+        'confidence_score': 0.0,
+        'context': ''
+        }
 
     # Prepare context and sources
     context = "\n\n---\n\n".join(
@@ -69,7 +74,7 @@ def rag_advanced(query, retriever, llm, top_k=5, min_score=0.2, return_context=F
     output= {
         'answer': response.content,
         'sources': sources,
-        'confidence': confidence
+        'confidence_score': confidence
     }
 
     if return_context:

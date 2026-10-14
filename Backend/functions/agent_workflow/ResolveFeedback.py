@@ -37,20 +37,32 @@ Validation Feedback:
 {validation_feedback}
 
 Instructions:
-- Fix all identified issues
-- Maintain ICH E3 compliance
-- Keep professional regulatory writing style
-- Do not remove valid existing sections
-- Improve completeness and accuracy
+- Fix the identified issues that can be resolved using available information.
+- Maintain an appropriate regulatory writing style.
+- Preserve valid existing sections and accurate information.
+- Do not invent study facts, procedures, dosing regimens, sample-size
+  justifications, statistical analysis plan details, or study results.
+- Do not claim that an appendix, protocol, or analysis plan exists
+  unless its contents were actually provided.
+- If information is missing, state "Not provided" or list it under
+  "Additional Information Required."
+- If you suggest a procedure or method not specified in the source,
+  clearly label it as a proposal requiring confirmation.
+- Distinguish a hypothetical study protocol synopsis from a completed
+  Clinical Study Report. Do not invent efficacy or safety findings.
+- Do not claim ICH compliance or submission readiness solely because
+  the document contains the expected headings.
 
 Generate the improved final draft.
 """
+
 
     # Step 2: Send to drafting pipeline
     revised_result = drafting_pipeline(
         query=revision_query,
         retriever=retriever,
-        drafting_agent=drafting_agent
+        drafting_agent=drafting_agent,
+        retrieval_query=original_query
     )
 
     improved_draft = revised_result["answer"]

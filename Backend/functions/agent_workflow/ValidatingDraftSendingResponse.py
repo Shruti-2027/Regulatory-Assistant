@@ -3,7 +3,8 @@ def validate_and_prepare_revision(
     original_query,
     draft_output,
     validation_input,
-    validation_agent
+    validation_agent,
+    retriever
 ):
     """
     Handles:
@@ -22,27 +23,69 @@ def validate_and_prepare_revision(
 
     print(f"Starting validation for config_id: {config_id}")
 
-    # Step 1: Call validation agent
+    # Step 1: Retrieve regulatory context
+    results = retriever.retrieve(original_query, top_k=5)
+
+    context = "\n\n---\n\n".join(
+        f"[Source: {doc.get('metadata', {}).get('source_file', 'unknown')}]\n"
+        f"{doc.get('content', '')}"
+        for doc in results
+    )
+
+    if not context:
+        context = "No relevant regulatory context was retrieved."
+
+    # Step 2: Call validation agent with actual inputs
+    user_message = f"""
+    REGULATORY CONTEXT:
+    {context}
+
+    ORIGINAL USER REQUEST:
+    {original_query}
+
+    DOCUMENT TO VALIDATE:
+    {draft_output}
+
+    VALIDATION REQUIREMENTS:
+    {validation_input}
+
+    Return the validation result in the format specified
+    by your system instructions.
+    """
+
     response = validation_agent.invoke({
         "messages": [
             {
                 "role": "user",
-                "content": validation_input
+                "content": user_message
             }
         ]
     })
 
-    # Step 2: Safe response extraction
+
+    # Step 3: Extract validation response safely
+    validation_feedback = ""
+
     try:
-        validation_feedback = response["messages"][-1].content
-    except:
-        validation_feedback = str(response)
+        messages = response.get("messages", [])
+
+        if messages:
+            validation_feedback = messages[-1].content or ""
+
+    except (AttributeError, KeyError, IndexError, TypeError) as e:
+        print(f"Validation response extraction error: {e}")
+        print(f"Response type: {type(response)}")
+        print(f"Raw response: {response}")
+
+    if not validation_feedback.strip():
+        print("WARNING: Validation agent returned empty feedback.")
+        print(f"Raw validation response: {response}")
+        raise ValueError("Validation agent returned empty feedback.")
 
     print("\nVALIDATION FEEDBACK:\n")
     print(validation_feedback)
-
-    # Step 3: Check if revision is needed
-    if "no major issues" in validation_feedback.lower():
+    # Step 4: Check if revision is needed
+    if "DOCUMENT IS SUBMISSION READY" in validation_feedback.upper():
         return {
             "config_id": config_id,
             "validation_feedback": validation_feedback,
@@ -50,7 +93,7 @@ def validate_and_prepare_revision(
             "status": "approved"
         }
 
-    # Step 4: Prepare drafting-ready revision prompt
+    # Step 5: Prepare drafting-ready revision prompt
     revision_input = f"""
         Please revise and improve the previous Clinical Study Report draft
         based on the validation feedback below.
